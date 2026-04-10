@@ -50,8 +50,23 @@ export default function NotificationsPage({ notifications, addNotification }) {
   )
 
   async function requestPermission() {
-    await OneSignal.Notifications.requestPermission()
-    setPermissionGranted(Notification.permission === 'granted')
+    try {
+      // iOS PWA : utiliser l'API native en priorité, OneSignal prend le relais
+      const permission = await Notification.requestPermission()
+      if (permission === 'granted') {
+        setPermissionGranted(true)
+        // Abonner le device à OneSignal après accord
+        await OneSignal.Notifications.requestPermission()
+      }
+    } catch (err) {
+      console.error('Permission error:', err)
+      addNotification({
+        type: 'system',
+        icon: '⚠️',
+        title: 'Erreur permission',
+        body: err.message || 'Impossible de demander la permission',
+      })
+    }
   }
 
   async function sendTestNotification() {
