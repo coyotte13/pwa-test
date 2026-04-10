@@ -23,7 +23,7 @@ export default function App() {
 
   return (
     <>
-      <main style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+      <main style={{ flex: 1, overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: 'column' }}>
         {activeTab === 'carte' && <CartePage />}
         {activeTab === 'notifs' && (
           <NotificationsPage

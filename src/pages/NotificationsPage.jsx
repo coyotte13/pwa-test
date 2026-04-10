@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import OneSignal from 'react-onesignal'
+import { initPromise } from '../onesignal'
 
 function timeAgo(date) {
   const diff = Math.floor((Date.now() - date.getTime()) / 1000)
@@ -51,13 +52,11 @@ export default function NotificationsPage({ notifications, addNotification }) {
 
   async function requestPermission() {
     try {
-      // iOS PWA : utiliser l'API native en priorité, OneSignal prend le relais
-      const permission = await Notification.requestPermission()
-      if (permission === 'granted') {
-        setPermissionGranted(true)
-        // Abonner le device à OneSignal après accord
-        await OneSignal.Notifications.requestPermission()
-      }
+      // Attendre que OneSignal.init() soit terminé avant de demander la permission
+      // Cela garantit l'abonnement VAPID (push natif) en plus de la permission navigateur
+      await initPromise
+      await OneSignal.Notifications.requestPermission()
+      setPermissionGranted(Notification.permission === 'granted')
     } catch (err) {
       console.error('Permission error:', err)
       addNotification({
